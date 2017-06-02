@@ -7,14 +7,17 @@ public class Manager : MonoBehaviour {
     public GameObject boomerPrefab;
     public GameObject hex;
 
-    private bool _isTraning = false;
-    private int _populationSize = 4;
-    private int _generationNumber = 0;
-    //private int[] layers = new int[] { 1, 10, 10, 1  }; 
-    private List<NeuralNetwork> boomerBrainz;
-    private bool leftMouseDown = false;
-    private List<Boomerang> boomerangList = null;
+    // these allows for tweaking from Unity frontend
+    public int PopulationSize = 4;
+    public const float TrainTime = 15f;
+    public int[] Layers = new int[] { 1, 10, 10, 1 };
+    // --
 
+    private List<Boomerang> boomerangList = null;
+    private List<NeuralNetwork> boomerBrainz;
+    private bool _leftMouseDown = false;
+    private int _generationNumber = 0;  
+    private bool _isTraning = false;
 
     void Timer()
     {
@@ -24,7 +27,7 @@ public class Manager : MonoBehaviour {
 
 	void Update ()
     {
-        if (_isTraning == false)
+        if (!_isTraning) // if not training 
         {
             if (_generationNumber == 0)
             {
@@ -33,39 +36,39 @@ public class Manager : MonoBehaviour {
             else
             {
                 boomerBrainz.Sort();
-                for (int i = 0; i < _populationSize / 2; i++)
+                for (int i = 0; i < PopulationSize / 2; i++)
                 {
-                    boomerBrainz[i] = new NeuralNetwork(boomerBrainz[i+(_populationSize / 2)]);
+                    //copy the 2nd half over the first half and mutate it 
+                    boomerBrainz[i] = new NeuralNetwork(boomerBrainz[i+(PopulationSize / 2)]); 
                     boomerBrainz[i].Mutate();
 
-                    boomerBrainz[i + (_populationSize / 2)] = new NeuralNetwork(boomerBrainz[i + (_populationSize / 2)]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
-                }
+                    //todo: keep the second half as is? trace it.
+                    boomerBrainz[i + (PopulationSize / 2)] = new NeuralNetwork(boomerBrainz[i + (PopulationSize / 2)]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
 
-                for (int i = 0; i < _populationSize; i++)
-                {
+                    //reset all their fitnesses to 0f
                     boomerBrainz[i].SetFitness(0f);
+                    boomerBrainz[i + (PopulationSize / 2)].SetFitness(0f); // yeah i know, but i prefer this to two 'for' loops.
                 }
             }
-
            
             _generationNumber++;
             
             _isTraning = true;
-            Invoke("Timer",15f);
+            Invoke("Timer",TrainTime); //train for _trainTime sec
             CreateBoomerangBodies();
         }
 
 
         if (Input.GetMouseButtonDown(0))
         {
-            leftMouseDown = true;
+            _leftMouseDown = true;
         }
         else if (Input.GetMouseButtonUp(0))
         {
-            leftMouseDown = false;
+            _leftMouseDown = false;
         }
 
-	    if (leftMouseDown != true) return;
+	    if (_leftMouseDown != true) return;
 	    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 	    hex.transform.position = mousePosition;
     }
@@ -86,7 +89,7 @@ public class Manager : MonoBehaviour {
         }
         // Rise my babies!
         boomerangList = new List<Boomerang>();
-        for (int i = 0; i < _populationSize; i++)
+        for (int i = 0; i < PopulationSize; i++)
         {
             var boomer = ((GameObject)Instantiate(boomerPrefab)).GetComponent<Boomerang>();
             boomer.Init(boomerBrainz[i],hex.transform);
@@ -97,18 +100,19 @@ public class Manager : MonoBehaviour {
 
     /// <summary>
     /// Initializes the Boomerangs' "brains" <br/>
-    /// Creates the N Networks boomerBrainz.
+    ///
     /// </summary>
     void InitBoomerangNeuralNetworks()
     {
         //population must be even
-        if (_populationSize % 2 != 0)  _populationSize++;
+        if (PopulationSize % 2 != 0)  PopulationSize++;
 
         boomerBrainz = new List<NeuralNetwork>();       
 
-        for (int i = 0; i < _populationSize; i++)
-        {           
-            var boomerBrain = new NeuralNetwork(1, 10, 20, 10, 1); //1 input and 1 output
+        for (int i = 0; i < PopulationSize; i++)
+        {
+            //var boomerBrain = new NeuralNetwork(1, 10, 4, 1); //1 input and 1 output
+            var boomerBrain = new NeuralNetwork(Layers); // this allows for tweaking from Unity frontend
             boomerBrain.Mutate();
             boomerBrainz.Add(boomerBrain);
         }

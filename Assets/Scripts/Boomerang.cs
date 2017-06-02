@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Boomerang : MonoBehaviour {
-    private bool initilized = false;
+    private bool _initialized = false;
     private Transform hex;
 
     private NeuralNetwork net;
@@ -20,12 +20,12 @@ public class Boomerang : MonoBehaviour {
 
     void FixedUpdate ()
     {
-        if (initilized == true)
+        if (_initialized)
         {
-            float distance = Vector2.Distance(transform.position, hex.position);  //distance to the HEX
+            float distance = Vector2.Distance(transform.position, hex.position); //distance to the HEX
             if (distance > 20f) distance = 20f; //max out distance to 20 
             foreach (Material t in mats)
-                t.color = new Color((1f - (distance / 20f)), 0, distance / 20f);
+                t.color = new Color((1f - (distance / 20f)), 0, distance / 20f); //close is red, far is blue
 
             float[] inputs = new float[1];
 
@@ -75,7 +75,7 @@ public class Boomerang : MonoBehaviour {
     {
         this.hex = hex;
         this.net = net;
-        initilized = true;
+        _initialized = true;
     }
 
     
