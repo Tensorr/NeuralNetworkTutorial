@@ -14,18 +14,23 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
 
 
     /// <summary>
-    /// Initilizes and neural network with random weights
+    /// Initilizes and neural network with random weights <br/>
+    /// Each parameter is the number of neurons in that layer <br/>   
+    /// Format: (input, L1, L2 ... Ln, output)
     /// </summary>
-    /// <param name="layers">layers to the neural network</param>
-    public NeuralNetwork(int[] layers)
-    {
+    /// <param name="layers"> Layers to the neural network<br/> 
+    /// Format: (input, L1, L2 ... Ln, output)
+    /// </param>
+    public NeuralNetwork(params int[] layers)
+    {   
+        if (layers==null) layers= new int[] { 1, 4, 4, 1 }; //params makes it impossible to Require not null
+        
         //deep copy of layers of this network 
         this.layers = new int[layers.Length];
         for (int i = 0; i < layers.Length; i++)
         {
             this.layers[i] = layers[i];
         }
-
 
         //generate matrix
         InitNeurons();
@@ -85,21 +90,21 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     private void InitWeights()
     {
 
-        List<float[][]> weightsList = new List<float[][]>(); //weights list which will later will converted into a weights 3D array
+        var weightsList = new List<float[][]>(); //weights list which will later will converted into a weights 3D array
 
-        //itterate over all neurons that have a weight connection
+        //iterate over all neurons that have a weight connection
         for (int i = 1; i < layers.Length; i++)
         {
-            List<float[]> layerWeightsList = new List<float[]>(); //layer weight list for this current layer (will be converted to 2D array)
+            var layerWeightsList = new List<float[]>(); //layer weight list for this current layer (will be converted to 2D array)
 
             int neuronsInPreviousLayer = layers[i - 1]; 
 
-            //itterate over all neurons in this current layer
+            //iterate over all neurons in this current layer
             for (int j = 0; j < neurons[i].Length; j++)
             {
-                float[] neuronWeights = new float[neuronsInPreviousLayer]; //neruons weights
+                var neuronWeights = new float[neuronsInPreviousLayer]; //neruons weights
 
-                //itterate over all neurons in the previous layer and set the weights randomly between 0.5f and -0.5
+                //iterate over all neurons in the previous layer and set the weights randomly between 0.5f and -0.5
                 for (int k = 0; k < neuronsInPreviousLayer; k++)
                 {
                     //give random weights to neuron weights

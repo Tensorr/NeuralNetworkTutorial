@@ -7,50 +7,50 @@ public class Manager : MonoBehaviour {
     public GameObject boomerPrefab;
     public GameObject hex;
 
-    private bool isTraning = false;
-    private int populationSize = 50;
-    private int generationNumber = 0;
-    private int[] layers = new int[] { 1, 10, 10, 1 }; //1 input and 1 output
-    private List<NeuralNetwork> nets;
+    private bool _isTraning = false;
+    private int _populationSize = 4;
+    private int _generationNumber = 0;
+    //private int[] layers = new int[] { 1, 10, 10, 1  }; 
+    private List<NeuralNetwork> boomerBrainz;
     private bool leftMouseDown = false;
     private List<Boomerang> boomerangList = null;
 
 
     void Timer()
     {
-        isTraning = false;
+        _isTraning = false;
     }
 
 
 	void Update ()
     {
-        if (isTraning == false)
+        if (_isTraning == false)
         {
-            if (generationNumber == 0)
+            if (_generationNumber == 0)
             {
                 InitBoomerangNeuralNetworks();
             }
             else
             {
-                nets.Sort();
-                for (int i = 0; i < populationSize / 2; i++)
+                boomerBrainz.Sort();
+                for (int i = 0; i < _populationSize / 2; i++)
                 {
-                    nets[i] = new NeuralNetwork(nets[i+(populationSize / 2)]);
-                    nets[i].Mutate();
+                    boomerBrainz[i] = new NeuralNetwork(boomerBrainz[i+(_populationSize / 2)]);
+                    boomerBrainz[i].Mutate();
 
-                    nets[i + (populationSize / 2)] = new NeuralNetwork(nets[i + (populationSize / 2)]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
+                    boomerBrainz[i + (_populationSize / 2)] = new NeuralNetwork(boomerBrainz[i + (_populationSize / 2)]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
                 }
 
-                for (int i = 0; i < populationSize; i++)
+                for (int i = 0; i < _populationSize; i++)
                 {
-                    nets[i].SetFitness(0f);
+                    boomerBrainz[i].SetFitness(0f);
                 }
             }
 
            
-            generationNumber++;
+            _generationNumber++;
             
-            isTraning = true;
+            _isTraning = true;
             Invoke("Timer",15f);
             CreateBoomerangBodies();
         }
@@ -65,52 +65,52 @@ public class Manager : MonoBehaviour {
             leftMouseDown = false;
         }
 
-        if(leftMouseDown == true)
-        {
-            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            hex.transform.position = mousePosition;
-        }
+	    if (leftMouseDown != true) return;
+	    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+	    hex.transform.position = mousePosition;
     }
 
-
+    /// <summary>
+    /// Destroys the current Boomerangs, if any
+    /// Creates _populationSize new ones
+    /// </summary>
     private void CreateBoomerangBodies()
     {
+        // if we have any, kill em!
         if (boomerangList != null)
         {
-            for (int i = 0; i < boomerangList.Count; i++)
+            foreach (var t in boomerangList)
             {
-                GameObject.Destroy(boomerangList[i].gameObject);
+                GameObject.Destroy(t.gameObject);
             }
-
         }
-
+        // Rise my babies!
         boomerangList = new List<Boomerang>();
-
-        for (int i = 0; i < populationSize; i++)
+        for (int i = 0; i < _populationSize; i++)
         {
-            Boomerang boomer = ((GameObject)Instantiate(boomerPrefab)).GetComponent<Boomerang>();
-            boomer.Init(nets[i],hex.transform);
+            var boomer = ((GameObject)Instantiate(boomerPrefab)).GetComponent<Boomerang>();
+            boomer.Init(boomerBrainz[i],hex.transform);
             boomerangList.Add(boomer);
         }
 
     }
 
+    /// <summary>
+    /// Initializes the Boomerangs' "brains" <br/>
+    /// Creates the N Networks boomerBrainz.
+    /// </summary>
     void InitBoomerangNeuralNetworks()
     {
-        //population must be even, just setting it to 20 incase it's not
-        if (populationSize % 2 != 0)
-        {
-            populationSize = 20; 
-        }
+        //population must be even
+        if (_populationSize % 2 != 0)  _populationSize++;
 
-        nets = new List<NeuralNetwork>();
-        
+        boomerBrainz = new List<NeuralNetwork>();       
 
-        for (int i = 0; i < populationSize; i++)
-        {
-            NeuralNetwork net = new NeuralNetwork(layers);
-            net.Mutate();
-            nets.Add(net);
+        for (int i = 0; i < _populationSize; i++)
+        {           
+            var boomerBrain = new NeuralNetwork(1, 10, 20, 10, 1); //1 input and 1 output
+            boomerBrain.Mutate();
+            boomerBrainz.Add(boomerBrain);
         }
     }
 }

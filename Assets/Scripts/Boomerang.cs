@@ -22,24 +22,20 @@ public class Boomerang : MonoBehaviour {
     {
         if (initilized == true)
         {
-            float distance = Vector2.Distance(transform.position, hex.position);
-            if (distance > 20f)
-                distance = 20f;
-            for (int i = 0; i < mats.Length; i++)
-                mats[i].color = new Color(distance / 20f, (1f-(distance / 20f)), (1f - (distance / 20f))); 
+            float distance = Vector2.Distance(transform.position, hex.position);  //distance to the HEX
+            if (distance > 20f) distance = 20f; //max out distance to 20 
+            foreach (Material t in mats)
+                t.color = new Color((1f - (distance / 20f)), 0, distance / 20f);
 
             float[] inputs = new float[1];
 
-
-            float angle = transform.eulerAngles.z % 360f;
+            float angle = transform.eulerAngles.z % 360f; // Current boomerang heading
             if (angle < 0f)
                 angle += 360f;
 
             Vector2 deltaVector = (hex.position - transform.position).normalized;
    
-
-            float rad = Mathf.Atan2(deltaVector.y, deltaVector.x);
-            rad *= Mathf.Rad2Deg;
+            float rad = Mathf.Atan2(deltaVector.y, deltaVector.x) * Mathf.Rad2Deg; //heading towards HEX
 
             rad = rad % 360;
             if (rad < 0)
@@ -53,14 +49,14 @@ public class Boomerang : MonoBehaviour {
                 rad += 360f;
             }
             rad = 360 - rad;
-            rad -= angle;
+
+            rad -= angle;    //calculate relative heading.
+
             if (rad < 0)
                 rad = 360 + rad;
-            if (rad >= 180f)
-            {
-                rad = 360 - rad;
-                rad *= -1f;
-            }
+            if (rad >= 180f)  // do we need to turn CW+ or CCW-
+                rad = 360 - rad * -1f;
+                      
             rad *= Mathf.Deg2Rad;
 
             inputs[0] = rad / (Mathf.PI);
