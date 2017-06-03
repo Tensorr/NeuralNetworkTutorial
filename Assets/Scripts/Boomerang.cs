@@ -35,7 +35,7 @@ public class Boomerang : MonoBehaviour {
 
             Vector2 deltaVector = (hex.position - transform.position).normalized;
    
-            float rad = Mathf.Atan2(deltaVector.y, deltaVector.x) * Mathf.Rad2Deg; //heading towards HEX
+            float rad = Mathf.Atan2(deltaVector.y, deltaVector.x) * Mathf.Rad2Deg; //angle between x axis and vector towards HEX
 
             rad = rad % 360;
             if (rad < 0)

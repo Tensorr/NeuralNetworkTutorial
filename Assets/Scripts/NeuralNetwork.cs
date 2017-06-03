@@ -96,7 +96,6 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         for (int i = 1; i < layers.Length; i++)
         {
             var layerWeightsList = new List<float[]>(); //layer weight list for this current layer (will be converted to 2D array)
-
             int neuronsInPreviousLayer = layers[i - 1]; 
 
             //iterate over all neurons in this current layer
@@ -220,12 +219,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public int CompareTo(NeuralNetwork other)
     {
         if (other == null) return 1;
-
-        if (fitness > other.fitness)
-            return 1;
-        else if (fitness < other.fitness)
-            return -1;
-        else
-            return 0;
+        if (fitness > other.fitness) return 1;
+        if (fitness < other.fitness) return -1;
+        return 0; // they can only be equal
     }
 }

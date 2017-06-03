@@ -7,9 +7,10 @@ public class Manager : MonoBehaviour {
     public GameObject boomerPrefab;
     public GameObject hex;
 
-    // these allows for tweaking from Unity frontend
+    // these allow for tweaking from Unity frontend
     public int PopulationSize = 4;
-    public const float TrainTime = 15f;
+    public float TrainTime = 15f;
+    [Space(10)]
     public int[] Layers = new int[] { 1, 10, 10, 1 };
     // --
 
@@ -38,23 +39,24 @@ public class Manager : MonoBehaviour {
                 boomerBrainz.Sort();
                 for (int i = 0; i < PopulationSize / 2; i++)
                 {
-                    //copy the 2nd half over the first half and mutate it 
-                    boomerBrainz[i] = new NeuralNetwork(boomerBrainz[i+(PopulationSize / 2)]); 
-                    boomerBrainz[i].Mutate();
+                    var j = i + (PopulationSize/2);
+                    //copy the good half over the bad half and mutate it 
+                    boomerBrainz[j] = new NeuralNetwork(boomerBrainz[i]); 
+                    boomerBrainz[j].Mutate();
 
                     //todo: keep the second half as is? trace it.
-                    boomerBrainz[i + (PopulationSize / 2)] = new NeuralNetwork(boomerBrainz[i + (PopulationSize / 2)]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
+                    boomerBrainz[i] = new NeuralNetwork(boomerBrainz[i]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
 
                     //reset all their fitnesses to 0f
                     boomerBrainz[i].SetFitness(0f);
-                    boomerBrainz[i + (PopulationSize / 2)].SetFitness(0f); // yeah i know, but i prefer this to two 'for' loops.
+                    boomerBrainz[j].SetFitness(0f); // yeah i know, but i prefer this to two 'for' loops.
                 }
             }
            
             _generationNumber++;
             
             _isTraning = true;
-            Invoke("Timer",TrainTime); //train for _trainTime sec
+            Invoke("Timer",TrainTime); //train for trainTime sec
             CreateBoomerangBodies();
         }
 
@@ -105,7 +107,7 @@ public class Manager : MonoBehaviour {
     void InitBoomerangNeuralNetworks()
     {
         //population must be even
-        if (PopulationSize % 2 != 0)  PopulationSize++;
+        if (PopulationSize % 2 != 0) PopulationSize++;
 
         boomerBrainz = new List<NeuralNetwork>();       
 
