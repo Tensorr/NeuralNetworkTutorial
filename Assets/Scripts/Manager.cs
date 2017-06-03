@@ -36,20 +36,22 @@ public class Manager : MonoBehaviour {
             }
             else
             {
-                boomerBrainz.Sort();
-                for (int i = 0; i < PopulationSize / 2; i++)
-                {
-                    var j = i + (PopulationSize/2);
-                    //copy the good half over the bad half and mutate it 
-                    boomerBrainz[j] = new NeuralNetwork(boomerBrainz[i]); 
-                    boomerBrainz[j].Mutate();
+                boomerBrainz.Sort(); //sort by fit worst to best
 
-                    //todo: keep the second half as is? trace it.
-                    boomerBrainz[i] = new NeuralNetwork(boomerBrainz[i]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
+                for (int badHalf = 0; badHalf < PopulationSize / 2; badHalf++)
+                {
+                    var goodHalf = badHalf + (PopulationSize/2);
+                    //was this the other way around on purpose? yeah a fit of 1 is perfect -1 is horrible
+                    //copy the good half over the bad half and mutate it 
+                    boomerBrainz[badHalf] = new NeuralNetwork(boomerBrainz[goodHalf]); 
+                    boomerBrainz[badHalf].Mutate();
+
+                    //swapped. keep the good half
+                    boomerBrainz[goodHalf] = new NeuralNetwork(boomerBrainz[goodHalf]); //todo: matrix reset vs this ? why would it be better?
 
                     //reset all their fitnesses to 0f
-                    boomerBrainz[i].SetFitness(0f);
-                    boomerBrainz[j].SetFitness(0f); // yeah i know, but i prefer this to two 'for' loops.
+                    boomerBrainz[badHalf].SetFitness(0f);
+                    boomerBrainz[goodHalf].SetFitness(0f); 
                 }
             }
            
