@@ -45,7 +45,6 @@ public class Manager : MonoBehaviour {
                     //copy the good half over the bad half and mutate it 
                     boomerBrainz[badHalf] = new NeuralNetwork(boomerBrainz[goodHalf]); 
                     boomerBrainz[badHalf].Mutate();
-
                     //swapped. keep the good half
                     boomerBrainz[goodHalf] = new NeuralNetwork(boomerBrainz[goodHalf]); //todo: matrix reset vs this ? why would it be better?
                     if (_generationNumber < 5) boomerBrainz[goodHalf].Mutate(); //increase early mutations
