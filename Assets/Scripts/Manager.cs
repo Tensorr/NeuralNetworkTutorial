@@ -7,110 +7,117 @@ public class Manager : MonoBehaviour {
     public GameObject boomerPrefab;
     public GameObject hex;
 
-    private bool isTraning = false;
-    private int populationSize = 50;
-    private int generationNumber = 0;
-    private int[] layers = new int[] { 1, 10, 10, 1 }; //1 input and 1 output
-    private List<NeuralNetwork> nets;
-    private bool leftMouseDown = false;
-    private List<Boomerang> boomerangList = null;
+    // these allow for tweaking from Unity frontend
+    public int PopulationSize = 4;
+    public float TrainTime = 15f;
+    [Space(10)]
+    public int[] Layers = new int[] { 1, 10, 10, 1 };
+    // --
 
+    private List<Boomerang> boomerangList = null;
+    private List<NeuralNetwork> boomerBrainz;
+    private bool _leftMouseDown = false;
+    private int _generationNumber = 0;  
+    private bool _isTraning = false;
 
     void Timer()
     {
-        isTraning = false;
+        _isTraning = false;
     }
 
 
 	void Update ()
     {
-        if (isTraning == false)
+        if (!_isTraning) // if not training 
         {
-            if (generationNumber == 0)
+            if (_generationNumber == 0)
             {
                 InitBoomerangNeuralNetworks();
             }
             else
             {
-                nets.Sort();
-                for (int i = 0; i < populationSize / 2; i++)
-                {
-                    nets[i] = new NeuralNetwork(nets[i+(populationSize / 2)]);
-                    nets[i].Mutate();
+                boomerBrainz.Sort(); //sort by fit worst to best
 
-                    nets[i + (populationSize / 2)] = new NeuralNetwork(nets[i + (populationSize / 2)]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
-                }
-
-                for (int i = 0; i < populationSize; i++)
+                for (int badHalf = 0; badHalf < PopulationSize / 2; badHalf++)
                 {
-                    nets[i].SetFitness(0f);
+                    var goodHalf = badHalf + (PopulationSize/2);
+                    //was this the other way around on purpose? yeah a fit of 1 is perfect -1 is horrible
+                    //copy the good half over the bad half and mutate it 
+                    boomerBrainz[badHalf] = new NeuralNetwork(boomerBrainz[goodHalf]); 
+                    boomerBrainz[badHalf].Mutate();
+                    //swapped. keep the good half
+                    boomerBrainz[goodHalf] = new NeuralNetwork(boomerBrainz[goodHalf]); //todo: matrix reset vs this ? why would it be better?
+                    if (_generationNumber < 5) boomerBrainz[goodHalf].Mutate(); //increase early mutations
+                    //reset all their fitnesses to 0f
+                    boomerBrainz[badHalf].SetFitness(0f);
+                    boomerBrainz[goodHalf].SetFitness(0f); 
                 }
             }
-
            
-            generationNumber++;
+            _generationNumber++;
             
-            isTraning = true;
-            Invoke("Timer",15f);
+            _isTraning = true;
+            Invoke("Timer",TrainTime); //train for trainTime sec
             CreateBoomerangBodies();
         }
 
 
         if (Input.GetMouseButtonDown(0))
         {
-            leftMouseDown = true;
+            _leftMouseDown = true;
         }
         else if (Input.GetMouseButtonUp(0))
         {
-            leftMouseDown = false;
+            _leftMouseDown = false;
         }
 
-        if(leftMouseDown == true)
-        {
-            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            hex.transform.position = mousePosition;
-        }
+	    if (_leftMouseDown != true) return;
+	    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+	    hex.transform.position = mousePosition;
     }
 
-
+    /// <summary>
+    /// Destroys the current Boomerangs, if any
+    /// Creates _populationSize new ones
+    /// </summary>
     private void CreateBoomerangBodies()
     {
+        // if we have any, kill em!
         if (boomerangList != null)
         {
-            for (int i = 0; i < boomerangList.Count; i++)
+            foreach (var t in boomerangList)
             {
-                GameObject.Destroy(boomerangList[i].gameObject);
+                GameObject.Destroy(t.gameObject);
             }
-
         }
-
+        // Rise my babies!
         boomerangList = new List<Boomerang>();
-
-        for (int i = 0; i < populationSize; i++)
+        for (int i = 0; i < PopulationSize; i++)
         {
-            Boomerang boomer = ((GameObject)Instantiate(boomerPrefab)).GetComponent<Boomerang>();
-            boomer.Init(nets[i],hex.transform);
+            var boomer = ((GameObject)Instantiate(boomerPrefab)).GetComponent<Boomerang>();
+            boomer.Init(boomerBrainz[i],hex.transform);
             boomerangList.Add(boomer);
         }
 
     }
 
+    /// <summary>
+    /// Initializes the Boomerangs' "brains" <br/>
+    ///
+    /// </summary>
     void InitBoomerangNeuralNetworks()
     {
-        //population must be even, just setting it to 20 incase it's not
-        if (populationSize % 2 != 0)
-        {
-            populationSize = 20; 
-        }
+        //population must be even
+        if (PopulationSize % 2 != 0) PopulationSize++;
 
-        nets = new List<NeuralNetwork>();
-        
+        boomerBrainz = new List<NeuralNetwork>();       
 
-        for (int i = 0; i < populationSize; i++)
+        for (int i = 0; i < PopulationSize; i++)
         {
-            NeuralNetwork net = new NeuralNetwork(layers);
-            net.Mutate();
-            nets.Add(net);
+            //var boomerBrain = new NeuralNetwork(1, 10, 4, 1); //1 input and 1 output
+            var boomerBrain = new NeuralNetwork(Layers); // this allows for tweaking from Unity frontend
+            boomerBrain.Mutate();
+            boomerBrainz.Add(boomerBrain);
         }
     }
 }
