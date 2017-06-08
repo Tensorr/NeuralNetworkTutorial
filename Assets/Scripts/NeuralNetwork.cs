@@ -10,8 +10,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     private int[] layers; //layers
     private float[][] neurons; //neuron matix
     private float[][][] weights; //weight matrix
-    private float fitness; //fitness of the network
 
+    public float Fitness { get; set; }
 
     /// <summary>
     /// Initilizes and neural network with random weights <br/>
@@ -132,22 +132,19 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
             neurons[0][i] = inputs[i];
         }
 
-        //itterate over all neurons and compute feedforward values 
+        //iterate over all neurons and compute feedforward values 
         for (int i = 1; i < layers.Length; i++)
         {
             for (int j = 0; j < neurons[i].Length; j++)
             {
                 float value = 0f;
-
                 for (int k = 0; k < neurons[i-1].Length; k++)
                 {
                     value += weights[i - 1][j][k] * neurons[i - 1][k]; //sum off all weights connections of this neuron weight their values in previous layer
                 }
-
                 neurons[i][j] = (float)Math.Tanh(value); //Hyperbolic tangent activation
             }
         }
-
         return neurons[neurons.Length-1]; //return output layer
     }
 
@@ -198,17 +195,12 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
 
     public void AddFitness(float fit)
     {
-        fitness += fit;
+        Fitness += fit;
     }
 
     public void SetFitness(float fit)
     {
-        fitness = fit;
-    }
-
-    public float GetFitness()
-    {
-        return fitness;
+        Fitness = fit;
     }
 
     /// <summary>
@@ -219,8 +211,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public int CompareTo(NeuralNetwork other)
     {
         if (other == null) return 1;
-        if (fitness > other.fitness) return 1;
-        if (fitness < other.fitness) return -1;
+        if (Fitness > other.Fitness) return 1;
+        if (Fitness < other.Fitness) return -1;
         return 0; // they can only be equal
     }
 }

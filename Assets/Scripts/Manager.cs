@@ -1,11 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Manager : MonoBehaviour {
 
     public GameObject boomerPrefab;
     public GameObject hex;
+    public Text GenerationText;
+    public Slider RemTimeSlider;
 
     // these allow for tweaking from Unity frontend
     public int PopulationSize = 4;
@@ -20,14 +23,23 @@ public class Manager : MonoBehaviour {
     private int _generationNumber = 0;  
     private bool _isTraning = false;
 
-    void Timer()
+    void TrainTimer()
     {
         _isTraning = false;
+        RemTimeSlider.value = RemTimeSlider.maxValue; //reset timer
     }
 
 
-	void Update ()
+    void Start()
     {
+        RemTimeSlider.maxValue = TrainTime;
+        RemTimeSlider.value = RemTimeSlider.maxValue;
+
+    }
+
+    void Update ()
+    {
+        RemTimeSlider.value -= Time.deltaTime;
         if (!_isTraning) // if not training 
         {
             if (_generationNumber == 0)
@@ -49,18 +61,19 @@ public class Manager : MonoBehaviour {
                     boomerBrainz[goodHalf] = new NeuralNetwork(boomerBrainz[goodHalf]); //todo: matrix reset vs this ? why would it be better?
                     if (_generationNumber < 5) boomerBrainz[goodHalf].Mutate(); //increase early mutations
                     //reset all their fitnesses to 0f
-                    boomerBrainz[badHalf].SetFitness(0f);
-                    boomerBrainz[goodHalf].SetFitness(0f); 
+                    boomerBrainz[badHalf].Fitness=0f;
+                    boomerBrainz[goodHalf].Fitness=0f; 
                 }
             }
            
             _generationNumber++;
-            
+            GenerationText.text = "Gen: " +_generationNumber.ToString();
+
             _isTraning = true;
-            Invoke("Timer",TrainTime); //train for trainTime sec
+
+            Invoke("TrainTimer",TrainTime);  //train for trainTime sec
             CreateBoomerangBodies();
         }
-
 
         if (Input.GetMouseButtonDown(0))
         {
